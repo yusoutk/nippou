@@ -84,7 +84,7 @@ namespace nippou
                 {
                     pbar = prog;
                     add_pbar = false;
-                }
+        }
             }
 
             pbar.Name = "proglessbar_task_" + tsk.NAME;
@@ -207,7 +207,7 @@ namespace nippou
                             AchiveUpdateTimer.Enabled = true;
                         }
                     }
-
+                    
                 }
             }
         }
@@ -256,7 +256,7 @@ namespace nippou
                     cl.ACTIVE_TASK = null;
                     tBox_log.Text = LOG;
                 }
-
+                
             }
             tBox_achive.Text = cl.ReturnAchiveText();
             lab_sumAchive.Text = cl.CalcTotalAchive().ToString("F") + "h";
@@ -329,7 +329,7 @@ namespace nippou
             base.SetStyle(ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.OptimizedDoubleBuffer, true);
-        }
+            }
 
         protected override void OnPaint(PaintEventArgs e)
         {

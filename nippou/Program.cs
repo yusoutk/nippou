@@ -166,7 +166,7 @@ namespace nippou
                 if (tsk == this.ACTIVE_TASK)
                 {
                     aa = tsk.ActiveAchive();
-                }
+            }
                 text += tsk.GetLine(tsk.ACHIVE_H + aa) + "h\r\n";
             }
             return text;
