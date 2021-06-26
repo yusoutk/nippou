@@ -308,7 +308,6 @@ namespace nippou
                 SetTaskButtons();
                 tBox_log.Text = "";
                 tBox_achive.Text = "";
-                tBox_plan.Text = "";
                 tBox_ActiveTask.Text = "";
                 lab_sumPlan.Text = "0.00h";
                 lab_sumAchive.Text = "0.00h";
