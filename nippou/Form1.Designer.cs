@@ -260,7 +260,6 @@ namespace nippou
             this.ClientSize = new System.Drawing.Size(602, 336);
             this.Controls.Add(this.UpdateButton);
             this.Controls.Add(this.tBox_fileName);
-            this.Controls.Add(this.LoadButton);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.button_init);
             this.Controls.Add(this.cBox_live);
@@ -271,6 +270,7 @@ namespace nippou
             this.Controls.Add(this.tBox_log);
             this.Controls.Add(this.Button_countstop);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.LoadButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "実績記録";

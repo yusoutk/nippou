@@ -25,6 +25,8 @@ namespace nippou
             this.NEET_TEXT = "NEET TIME ♨";
             this.plantext_checkdif = "";
             ChangeChecker(false);
+
+            this.ActiveControl = tBox_plan;
         }
 
         private void SetTaskButtons()
