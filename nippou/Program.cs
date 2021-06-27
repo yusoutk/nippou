@@ -165,7 +165,7 @@ namespace nippou
             return text;
         }
 
-        public string ReturnAchiveText()
+        public string ReturnAchieveText()
         {
             string text = "";
             float aa;
@@ -174,9 +174,9 @@ namespace nippou
                 aa = 0;
                 if (tsk == this.ACTIVE_TASK)
                 {
-                    aa = tsk.ActiveAchive();
+                    aa = tsk.ActiveAchieve();
                 }
-                text += tsk.GetLine(tsk.ACHIVE_H + aa) + "h\r\n";
+                text += tsk.GetLine(tsk.ACHIEVE_H + aa) + "h\r\n";
             }
             return text;
         }
@@ -191,7 +191,7 @@ namespace nippou
             return tot;
         }
 
-        public float CalcTotalAchive()
+        public float CalcTotalAchieve()
         {
             float tot = 0;
             float aa;
@@ -200,9 +200,9 @@ namespace nippou
                 aa = 0;
                 if (tsk == this.ACTIVE_TASK)
                 {
-                    aa = tsk.ActiveAchive();
+                    aa = tsk.ActiveAchieve();
                 }
-                tot += (float)Math.Round((tsk.ACHIVE_H + aa) * 4) / 4;
+                tot += (float)Math.Round((tsk.ACHIEVE_H + aa) * 4) / 4;
             }
             return tot;
         }
@@ -213,7 +213,7 @@ namespace nippou
     {
         public string NAME;
         public float PLAN_H;
-        public float ACHIVE_H;
+        public float ACHIEVE_H;
         private List<DateTime> TIME_STAMPS = new List<DateTime>();
 
         public Task(string name, float plan_h)
@@ -224,7 +224,7 @@ namespace nippou
                 plan_h = 0.25f;
             }
             this.PLAN_H = (float)Math.Round(plan_h * 4) / 4;
-            this.ACHIVE_H = 0;
+            this.ACHIEVE_H = 0;
         }
 
         public string CountStart()
@@ -241,12 +241,12 @@ namespace nippou
             DateTime dtstart = this.TIME_STAMPS[this.TIME_STAMPS.Count - 1];
             TimeSpan ts = dtstop - dtstart;
             this.TIME_STAMPS.Add(dtstop);
-            this.ACHIVE_H += (float)ts.TotalSeconds / 3600;
+            this.ACHIEVE_H += (float)ts.TotalSeconds / 3600;
             string logstr = dtstart.ToShortTimeString() + "-" + dtstop.ToShortTimeString() + " " + this.NAME;
             return logstr;
         }
 
-        public float ActiveAchive()
+        public float ActiveAchieve()
         {
             DateTime dtstop = DateTime.Now;
             DateTime dtstart = this.TIME_STAMPS[this.TIME_STAMPS.Count - 1];

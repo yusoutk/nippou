@@ -15,6 +15,7 @@ namespace nippou
         private string NEET_TEXT;
         private bool CHANGED;
         private string plantext_checkdif;
+        private int btn_height;
         public MainForm()
         {
             InitializeComponent();
@@ -24,6 +25,7 @@ namespace nippou
             this.MinimumSize = this.Size;
             this.NEET_TEXT = "NEET TIME ♨";
             this.plantext_checkdif = "";
+            this.btn_height = 0;
             ChangeChecker(false);
 
             this.ActiveControl = tBox_plan;
@@ -72,7 +74,7 @@ namespace nippou
                 btn.Location = new Point(0, 5);
             }
 
-            btn.Size = new Size(150, 50);
+            btn.Size = new Size(135, 50);
             btn.Click += new EventHandler(this.taskbutton_Click);
 
 
@@ -107,13 +109,25 @@ namespace nippou
                 pbar.Location = new Point(0, 0);
             }
 
-            pbar.Size = new Size(150, 60);
+            pbar.Size = new Size(135, 60);
             pbar.Click += new EventHandler(this.taskbutton_Click);
 
             if (add_pbar)
             {
                 this.panel_TaskButtons.Controls.Add(pbar);
                 this.PROG_LIST.Add(pbar);
+            }
+
+            if(this.BUTTON_LIST.Count * 60 > panel_TaskButtons.Height)
+            {
+                vScrollBar_tasks.Enabled = true;
+                vScrollBar_tasks.Maximum = this.BUTTON_LIST.Count * 60 + 3;
+                vScrollBar_tasks.LargeChange = panel_TaskButtons.Height;
+                vScrollBar_tasks.SmallChange = 60;
+            }
+            else
+            {
+                vScrollBar_tasks.Enabled = false;
             }
         }
 
@@ -128,7 +142,7 @@ namespace nippou
                 aa = 0;
                 if (tsk == task_mng.ACTIVE_TASK)
                 {
-                    aa = tsk.ActiveAchive();
+                    aa = tsk.ActiveAchieve();
                     pbar.ForeColor = SystemColors.Highlight;
                 }
                 else
@@ -137,7 +151,7 @@ namespace nippou
                 }
                 if (tsk.PLAN_H != 0)
                 {
-                    val = (tsk.ACHIVE_H + aa) / tsk.PLAN_H;
+                    val = (tsk.ACHIEVE_H + aa) / tsk.PLAN_H;
                 }
                 else
                 {
@@ -149,7 +163,7 @@ namespace nippou
                     val = val - 1;
                     if (tsk == task_mng.ACTIVE_TASK)
                     {
-                        aa = tsk.ActiveAchive();
+                        aa = tsk.ActiveAchieve();
                         pbar.ForeColor = SystemColors.Highlight;
                         pbar.BackColor = SystemColors.ActiveBorder;
                     }
@@ -171,6 +185,11 @@ namespace nippou
                 }
 
                 pbar.Value = (int)Math.Round(val * 100);
+
+
+                var btn = this.BUTTON_LIST[task_index];
+                pbar.Location = new Point(0, this.btn_height + task_index * 60);
+                btn.Location = new Point(0, this.btn_height + 5 + task_index * 60);
             }
 
 
@@ -210,12 +229,12 @@ namespace nippou
                         tBox_ActiveTask.Text = task.NAME;
                         tBox_log.Text += task.CountStart() + "\r\n";
 
-                        tBox_achive.Text = task_mng.ReturnAchiveText();
-                        lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+                        tBox_achieve.Text = task_mng.ReturnAchieveText();
+                        lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
                         UpdateProgBars();
                         if (lab_sumPlan.Enabled)
                         {
-                            AchiveUpdateTimer.Enabled = true;
+                            AchieveUpdateTimer.Enabled = true;
                         }
                         ChangeChecker(true);
                     }
@@ -229,13 +248,14 @@ namespace nippou
             tBox_log.Text = tBox_log.Text.TrimEnd('\r', '\n');
             string[] log_ls = tBox_log.Text.Replace("\r\n", "\n").Split('\n');
             tBox_log.Text = string.Join("\r\n", log_ls, 0, log_ls.Length - 1) + "\r\n";
+            tBox_log.Text = tBox_log.Text.TrimStart('\r', '\n');
             tBox_log.Text += task_mng.ACTIVE_TASK.CountStop() + "\r\n";
         }
 
 
         private void tBox_plan_TextChanged(object sender, EventArgs e)
         {
-            AchiveUpdateTimer.Enabled = false;
+            AchieveUpdateTimer.Enabled = false;
             task_mng.LoadPlanText(tBox_plan.Text);
             //SetTaskButtons();
             ButtonWritePlan.BackColor = SystemColors.ActiveCaption;
@@ -253,7 +273,7 @@ namespace nippou
             UpdateProgBars();
             if (task_mng.ACTIVE_TASK != null)
             {
-                AchiveUpdateTimer.Enabled = true;
+                AchieveUpdateTimer.Enabled = true;
             }
             
             if(tBox_plan.Text == this.plantext_checkdif)
@@ -266,10 +286,10 @@ namespace nippou
             }
         }
 
-        private void ButtonWriteAchive_Click(object sender, EventArgs e)
+        private void ButtonWriteAchieve_Click(object sender, EventArgs e)
         {
-            tBox_achive.Text = task_mng.ReturnAchiveText();
-            lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+            tBox_achieve.Text = task_mng.ReturnAchieveText();
+            lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
             UpdateProgBars();
         }
 
@@ -285,19 +305,19 @@ namespace nippou
                     task_mng.ACTIVE_TASK = null;
                     ChangeChecker(false);
 
-                    tBox_achive.Text = task_mng.ReturnAchiveText();
-                    lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+                    tBox_achieve.Text = task_mng.ReturnAchieveText();
+                    lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
                     UpdateProgBars();
                 }
 
             }
-            AchiveUpdateTimer.Enabled = false;
+            AchieveUpdateTimer.Enabled = false;
         }
 
-        private void AchiveUpdateTimer_Tick(object sender, EventArgs e)
+        private void AchieveUpdateTimer_Tick(object sender, EventArgs e)
         {
-            tBox_achive.Text = task_mng.ReturnAchiveText();
-            lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+            tBox_achieve.Text = task_mng.ReturnAchieveText();
+            lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
             UpdateProgBars();
         }
 
@@ -307,14 +327,15 @@ namespace nippou
             if (this.CHANGED)
             {
                 str += "（保存されていないアクションは失われます）";
-            }
-            if (MessageBox.Show(
+                if (MessageBox.Show(
                 str, "確認",
                 MessageBoxButtons.YesNo
                 ) == DialogResult.No)
-            {
-                e.Cancel = true;
+                {
+                    e.Cancel = true;
+                }
             }
+            
         }
 
         private void cBox_live_CheckedChanged(object sender, EventArgs e)
@@ -323,12 +344,12 @@ namespace nippou
             {
                 if (task_mng.ACTIVE_TASK != null)
                 {
-                    AchiveUpdateTimer.Enabled = true;
+                    AchieveUpdateTimer.Enabled = true;
                 }
             }
             else
             {
-                AchiveUpdateTimer.Enabled = false;
+                AchieveUpdateTimer.Enabled = false;
             }
         }
 
@@ -346,10 +367,10 @@ namespace nippou
                 task_mng.ACTIVE_TASK = null;
                 SetTaskButtons();
                 tBox_log.Text = "";
-                tBox_achive.Text = "";
+                tBox_achieve.Text = "";
                 tBox_ActiveTask.Text = "";
                 lab_sumPlan.Text = "0.00h";
-                lab_sumAchive.Text = "0.00h";
+                lab_sumAchieve.Text = "0.00h";
                 tBox_fileName.Text = "";
                 ChangeChecker(false);
             }
@@ -388,7 +409,6 @@ namespace nippou
                 {
                     ChangeChecker(false);
                     this.plantext_checkdif = tBox_plan.Text;
-                    MessageBox.Show("上書き保存しました。");
                 }
                 else
                 {
@@ -442,12 +462,12 @@ namespace nippou
                 lab_sumPlan.Text = task_mng.CalcTotalPlan().ToString("F") + "h";
                 if (task_mng.ACTIVE_TASK != null)
                 {
-                    AchiveUpdateTimer.Enabled = true;
+                    AchieveUpdateTimer.Enabled = true;
                 }
 
                 // 実績テキストボックスの復元
-                tBox_achive.Text = task_mng.ReturnAchiveText();
-                lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+                tBox_achieve.Text = task_mng.ReturnAchieveText();
+                lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
 
 
                 // ボタンの復元
@@ -487,6 +507,17 @@ namespace nippou
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             SaveForm(true);
+        }
+
+        private void vScrollBar_tasks_Scroll(object sender, ScrollEventArgs e)
+        {
+            this.btn_height = -vScrollBar_tasks.Value;
+            UpdateProgBars();
+        }
+
+        private void panel_TaskButtons_Scroll(object sender, ScrollEventArgs e)
+        {
+
         }
     }
 

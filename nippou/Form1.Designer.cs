@@ -36,23 +36,25 @@ namespace nippou
             this.tBox_ActiveTask = new System.Windows.Forms.TextBox();
             this.tBox_plan = new System.Windows.Forms.TextBox();
             this.ButtonWritePlan = new System.Windows.Forms.Button();
-            this.tBox_achive = new System.Windows.Forms.TextBox();
-            this.ButtonWriteAchive = new System.Windows.Forms.Button();
+            this.tBox_achieve = new System.Windows.Forms.TextBox();
+            this.ButtonWriteAchieve = new System.Windows.Forms.Button();
             this.lab_sumPlan = new System.Windows.Forms.Label();
             this.panel_TaskButtons = new System.Windows.Forms.Panel();
+            this.vScrollBar_tasks = new System.Windows.Forms.VScrollBar();
             this.panel_Plan = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.lab_sumAchive = new System.Windows.Forms.Label();
+            this.panel_Achieve = new System.Windows.Forms.Panel();
+            this.lab_sumAchieve = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.AchiveUpdateTimer = new System.Windows.Forms.Timer(this.components);
+            this.AchieveUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.cBox_live = new System.Windows.Forms.CheckBox();
             this.button_init = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.LoadButton = new System.Windows.Forms.Button();
             this.tBox_fileName = new System.Windows.Forms.TextBox();
             this.UpdateButton = new System.Windows.Forms.Button();
+            this.panel_TaskButtons.SuspendLayout();
             this.panel_Plan.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.panel_Achieve.SuspendLayout();
             this.SuspendLayout();
             // 
             // Button_countstop
@@ -105,26 +107,26 @@ namespace nippou
             this.ButtonWritePlan.UseVisualStyleBackColor = false;
             this.ButtonWritePlan.Click += new System.EventHandler(this.ButtonWritePlan_Click);
             // 
-            // tBox_achive
+            // tBox_achieve
             // 
-            this.tBox_achive.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tBox_achive.Location = new System.Drawing.Point(0, 23);
-            this.tBox_achive.Multiline = true;
-            this.tBox_achive.Name = "tBox_achive";
-            this.tBox_achive.ReadOnly = true;
-            this.tBox_achive.Size = new System.Drawing.Size(250, 127);
-            this.tBox_achive.TabIndex = 7;
+            this.tBox_achieve.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tBox_achieve.Location = new System.Drawing.Point(0, 23);
+            this.tBox_achieve.Multiline = true;
+            this.tBox_achieve.Name = "tBox_achieve";
+            this.tBox_achieve.ReadOnly = true;
+            this.tBox_achieve.Size = new System.Drawing.Size(250, 127);
+            this.tBox_achieve.TabIndex = 7;
             // 
-            // ButtonWriteAchive
+            // ButtonWriteAchieve
             // 
-            this.ButtonWriteAchive.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.ButtonWriteAchive.Location = new System.Drawing.Point(0, 0);
-            this.ButtonWriteAchive.Name = "ButtonWriteAchive";
-            this.ButtonWriteAchive.Size = new System.Drawing.Size(75, 23);
-            this.ButtonWriteAchive.TabIndex = 8;
-            this.ButtonWriteAchive.Text = "実績出力";
-            this.ButtonWriteAchive.UseVisualStyleBackColor = false;
-            this.ButtonWriteAchive.Click += new System.EventHandler(this.ButtonWriteAchive_Click);
+            this.ButtonWriteAchieve.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.ButtonWriteAchieve.Location = new System.Drawing.Point(0, 0);
+            this.ButtonWriteAchieve.Name = "ButtonWriteAchieve";
+            this.ButtonWriteAchieve.Size = new System.Drawing.Size(75, 23);
+            this.ButtonWriteAchieve.TabIndex = 8;
+            this.ButtonWriteAchieve.Text = "実績出力";
+            this.ButtonWriteAchieve.UseVisualStyleBackColor = false;
+            this.ButtonWriteAchieve.Click += new System.EventHandler(this.ButtonWriteAchieve_Click);
             // 
             // lab_sumPlan
             // 
@@ -138,12 +140,23 @@ namespace nippou
             // 
             // panel_TaskButtons
             // 
-            this.panel_TaskButtons.AutoScroll = true;
             this.panel_TaskButtons.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel_TaskButtons.Controls.Add(this.vScrollBar_tasks);
             this.panel_TaskButtons.Location = new System.Drawing.Point(260, 51);
             this.panel_TaskButtons.Name = "panel_TaskButtons";
             this.panel_TaskButtons.Size = new System.Drawing.Size(156, 282);
             this.panel_TaskButtons.TabIndex = 10;
+            this.panel_TaskButtons.Scroll += new System.Windows.Forms.ScrollEventHandler(this.panel_TaskButtons_Scroll);
+            // 
+            // vScrollBar_tasks
+            // 
+            this.vScrollBar_tasks.Dock = System.Windows.Forms.DockStyle.Right;
+            this.vScrollBar_tasks.Enabled = false;
+            this.vScrollBar_tasks.Location = new System.Drawing.Point(137, 0);
+            this.vScrollBar_tasks.Name = "vScrollBar_tasks";
+            this.vScrollBar_tasks.Size = new System.Drawing.Size(15, 278);
+            this.vScrollBar_tasks.TabIndex = 0;
+            this.vScrollBar_tasks.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar_tasks_Scroll);
             // 
             // panel_Plan
             // 
@@ -156,26 +169,26 @@ namespace nippou
             this.panel_Plan.Size = new System.Drawing.Size(250, 150);
             this.panel_Plan.TabIndex = 11;
             // 
-            // panel1
+            // panel_Achieve
             // 
-            this.panel1.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.panel1.Controls.Add(this.lab_sumAchive);
-            this.panel1.Controls.Add(this.ButtonWriteAchive);
-            this.panel1.Controls.Add(this.tBox_achive);
-            this.panel1.Location = new System.Drawing.Point(6, 183);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(250, 150);
-            this.panel1.TabIndex = 12;
+            this.panel_Achieve.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.panel_Achieve.Controls.Add(this.lab_sumAchieve);
+            this.panel_Achieve.Controls.Add(this.ButtonWriteAchieve);
+            this.panel_Achieve.Controls.Add(this.tBox_achieve);
+            this.panel_Achieve.Location = new System.Drawing.Point(6, 183);
+            this.panel_Achieve.Name = "panel_Achieve";
+            this.panel_Achieve.Size = new System.Drawing.Size(250, 150);
+            this.panel_Achieve.TabIndex = 12;
             // 
-            // lab_sumAchive
+            // lab_sumAchieve
             // 
-            this.lab_sumAchive.AutoSize = true;
-            this.lab_sumAchive.Location = new System.Drawing.Point(214, 5);
-            this.lab_sumAchive.Name = "lab_sumAchive";
-            this.lab_sumAchive.Size = new System.Drawing.Size(31, 12);
-            this.lab_sumAchive.TabIndex = 10;
-            this.lab_sumAchive.Text = "0.00h";
-            this.lab_sumAchive.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lab_sumAchieve.AutoSize = true;
+            this.lab_sumAchieve.Location = new System.Drawing.Point(214, 5);
+            this.lab_sumAchieve.Name = "lab_sumAchieve";
+            this.lab_sumAchieve.Size = new System.Drawing.Size(31, 12);
+            this.lab_sumAchieve.TabIndex = 10;
+            this.lab_sumAchieve.Text = "0.00h";
+            this.lab_sumAchieve.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label1
             // 
@@ -186,10 +199,10 @@ namespace nippou
             this.label1.TabIndex = 13;
             this.label1.Text = "進行中：";
             // 
-            // AchiveUpdateTimer
+            // AchieveUpdateTimer
             // 
-            this.AchiveUpdateTimer.Interval = 1000;
-            this.AchiveUpdateTimer.Tick += new System.EventHandler(this.AchiveUpdateTimer_Tick);
+            this.AchieveUpdateTimer.Interval = 1000;
+            this.AchieveUpdateTimer.Tick += new System.EventHandler(this.AchieveUpdateTimer_Tick);
             // 
             // cBox_live
             // 
@@ -263,7 +276,7 @@ namespace nippou
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.button_init);
             this.Controls.Add(this.cBox_live);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel_Achieve);
             this.Controls.Add(this.panel_Plan);
             this.Controls.Add(this.panel_TaskButtons);
             this.Controls.Add(this.tBox_ActiveTask);
@@ -275,10 +288,11 @@ namespace nippou
             this.Name = "MainForm";
             this.Text = "実績記録";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.panel_TaskButtons.ResumeLayout(false);
             this.panel_Plan.ResumeLayout(false);
             this.panel_Plan.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.panel_Achieve.ResumeLayout(false);
+            this.panel_Achieve.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -291,21 +305,22 @@ namespace nippou
         private System.Windows.Forms.TextBox tBox_ActiveTask;
         private System.Windows.Forms.TextBox tBox_plan;
         private System.Windows.Forms.Button ButtonWritePlan;
-        private System.Windows.Forms.TextBox tBox_achive;
-        private System.Windows.Forms.Button ButtonWriteAchive;
+        private System.Windows.Forms.TextBox tBox_achieve;
+        private System.Windows.Forms.Button ButtonWriteAchieve;
         private System.Windows.Forms.Label lab_sumPlan;
         private System.Windows.Forms.Panel panel_TaskButtons;
         private System.Windows.Forms.Panel panel_Plan;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel_Achieve;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label lab_sumAchive;
-        private System.Windows.Forms.Timer AchiveUpdateTimer;
+        private System.Windows.Forms.Label lab_sumAchieve;
+        private System.Windows.Forms.Timer AchieveUpdateTimer;
         private System.Windows.Forms.CheckBox cBox_live;
         private System.Windows.Forms.Button button_init;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.TextBox tBox_fileName;
         private System.Windows.Forms.Button UpdateButton;
+        private System.Windows.Forms.VScrollBar vScrollBar_tasks;
     }
 }
 
