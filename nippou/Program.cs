@@ -21,14 +21,18 @@ namespace nippou
     }
 
 
-    public class MainClass
+    [Serializable]
+    public class TaskManager
     {
         public List<Task> TASK_LIST = new List<Task>();
         public Task ACTIVE_TASK;
+        public char TASK_PREFIX;
+        public string LOG_SAVE;
 
-        public MainClass()
+        public TaskManager()
         {
             this.ACTIVE_TASK = null;
+            this.TASK_PREFIX = '・';
         }
 
 
@@ -60,12 +64,17 @@ namespace nippou
             List<Task> new_task_list = new List<Task>();
 
             string[] lines = text.Replace("\r\n", "\n").Split('\n');
-            foreach (string line in lines)
+            for (int j = 0; j < lines.Length; j++)
             {
+                string line = lines[j];
                 bool add = false;
                 if (line.Length > 0)
                 {
-                    if (line[0] == '・' && line[line.Length - 1] == 'h')
+                    if (line[0] != this.TASK_PREFIX)
+                    {
+                        line = this.TASK_PREFIX + line;
+                    }
+                    if (line[0] == this.TASK_PREFIX && line[line.Length - 1] == 'h')
                     {
                         string str_name = LoadLine(line, 0);
                         string str_h = LoadLine(line, 1);
@@ -113,7 +122,7 @@ namespace nippou
                                 }
                                 if (add)
                                 {
-                                    if(f_h < 0.25)
+                                    if (f_h < 0.25)
                                     {
                                         f_h = 0.25f;
                                     }
@@ -166,7 +175,7 @@ namespace nippou
                 if (tsk == this.ACTIVE_TASK)
                 {
                     aa = tsk.ActiveAchive();
-            }
+                }
                 text += tsk.GetLine(tsk.ACHIVE_H + aa) + "h\r\n";
             }
             return text;
@@ -199,7 +208,7 @@ namespace nippou
         }
 
     }
-
+    [Serializable]
     public class Task
     {
         public string NAME;
@@ -210,7 +219,7 @@ namespace nippou
         public Task(string name, float plan_h)
         {
             this.NAME = name;
-            if(plan_h <0.25)
+            if (plan_h < 0.25)
             {
                 plan_h = 0.25f;
             }

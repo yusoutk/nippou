@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 namespace nippou
 {
     public partial class MainForm : Form
     {
-        MainClass cl = new MainClass();
+        TaskManager task_mng = new TaskManager();
         List<Button> BUTTON_LIST = new List<Button>();
         List<ColorProgressBar> PROG_LIST = new List<ColorProgressBar>();
-        private string LOG = "";
-
+        private string NEET_TEXT;
+        private bool CHANGED;
+        private string plantext_checkdif;
         public MainForm()
         {
             InitializeComponent();
@@ -19,6 +22,9 @@ namespace nippou
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximumSize = this.Size;
             this.MinimumSize = this.Size;
+            this.NEET_TEXT = "NEET TIME ♨";
+            this.plantext_checkdif = "";
+            ChangeChecker(false);
         }
 
         private void SetTaskButtons()
@@ -30,9 +36,9 @@ namespace nippou
             }
             this.BUTTON_LIST.Clear();
             this.PROG_LIST.Clear();
-            for (int i = 0; i < cl.TASK_LIST.Count; i++)
+            for (int i = 0; i < task_mng.TASK_LIST.Count; i++)
             {
-                AddTaskButton(cl.TASK_LIST[i]);
+                AddTaskButton(task_mng.TASK_LIST[i]);
             }
         }
 
@@ -84,7 +90,7 @@ namespace nippou
                 {
                     pbar = prog;
                     add_pbar = false;
-        }
+                }
             }
 
             pbar.Name = "proglessbar_task_" + tsk.NAME;
@@ -112,13 +118,13 @@ namespace nippou
         private void UpdateProgBars()
         {
             float val, aa;
-            foreach (Task tsk in cl.TASK_LIST)
+            foreach (Task tsk in task_mng.TASK_LIST)
             {
-                int task_index = cl.TASK_LIST.IndexOf(tsk);
+                int task_index = task_mng.TASK_LIST.IndexOf(tsk);
                 ColorProgressBar pbar = this.PROG_LIST[task_index];
 
                 aa = 0;
-                if (tsk == cl.ACTIVE_TASK)
+                if (tsk == task_mng.ACTIVE_TASK)
                 {
                     aa = tsk.ActiveAchive();
                     pbar.ForeColor = SystemColors.Highlight;
@@ -139,7 +145,7 @@ namespace nippou
                 if (val > 1)
                 {
                     val = val - 1;
-                    if (tsk == cl.ACTIVE_TASK)
+                    if (tsk == task_mng.ACTIVE_TASK)
                     {
                         aa = tsk.ActiveAchive();
                         pbar.ForeColor = SystemColors.Highlight;
@@ -157,9 +163,14 @@ namespace nippou
                     }
 
                 }
+                if(val > 1)
+                {
+                    val = val - (float)Math.Floor(val);
+                }
 
                 pbar.Value = (int)Math.Round(val * 100);
             }
+
 
         }
 
@@ -174,49 +185,56 @@ namespace nippou
         {
             if (!(sender is Button button_pushed)) return;
             int task_index = BUTTON_LIST.IndexOf(button_pushed);
-            if (cl.TASK_LIST.Count > task_index)
+            if (task_mng.TASK_LIST.Count > task_index)
             {
-                string log_last = "";
-                Task task = cl.TASK_LIST[task_index];
+                Task task = task_mng.TASK_LIST[task_index];
 
-                if (cl.ACTIVE_TASK != task)
+                if (task_mng.ACTIVE_TASK != task)
                 {
                     string msg = task.NAME + " を開始しますか？";
-                    if (cl.ACTIVE_TASK != null)
+                    if (task_mng.ACTIVE_TASK != null)
                     {
-                        msg += "（現在進行中のタスクは中断されます）";
+                        msg = task_mng.ACTIVE_TASK.NAME + "を終了し、" + msg;
                     }
                     DialogResult result = MessageBox.Show(msg, "タスクの開始", MessageBoxButtons.OKCancel);
                     if (result == DialogResult.OK)
                     {
-                        if (cl.ACTIVE_TASK != null)
+                        if (task_mng.ACTIVE_TASK != null)
                         {
-                            LOG += cl.ACTIVE_TASK.CountStop() + "\r\n";
+                            WriteStopLog();
                         }
 
-                        cl.ACTIVE_TASK = task;
+                        task_mng.ACTIVE_TASK = task;
                         tBox_ActiveTask.Text = task.NAME;
-                        log_last = task.CountStart() + "\r\n";
-                        tBox_log.Text = LOG + log_last;
+                        tBox_log.Text += task.CountStart() + "\r\n";
 
-                        tBox_achive.Text = cl.ReturnAchiveText();
-                        lab_sumAchive.Text = cl.CalcTotalAchive().ToString("F") + "h";
+                        tBox_achive.Text = task_mng.ReturnAchiveText();
+                        lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
                         UpdateProgBars();
                         if (lab_sumPlan.Enabled)
                         {
                             AchiveUpdateTimer.Enabled = true;
                         }
+                        ChangeChecker(true);
                     }
-                    
+
                 }
             }
+        }
+
+        private void WriteStopLog()
+        {
+            tBox_log.Text = tBox_log.Text.TrimEnd('\r', '\n');
+            string[] log_ls = tBox_log.Text.Replace("\r\n", "\n").Split('\n');
+            tBox_log.Text = string.Join("\r\n", log_ls, 0, log_ls.Length - 1) + "\r\n";
+            tBox_log.Text += task_mng.ACTIVE_TASK.CountStop() + "\r\n";
         }
 
 
         private void tBox_plan_TextChanged(object sender, EventArgs e)
         {
             AchiveUpdateTimer.Enabled = false;
-            cl.LoadPlanText(tBox_plan.Text);
+            task_mng.LoadPlanText(tBox_plan.Text);
             //SetTaskButtons();
             ButtonWritePlan.BackColor = SystemColors.ActiveCaption;
             lab_sumPlan.Enabled = false;
@@ -224,58 +242,72 @@ namespace nippou
 
         private void ButtonWritePlan_Click(object sender, EventArgs e)
         {
-            cl.LoadPlanText(tBox_plan.Text);
-            tBox_plan.Text = cl.ReturnPlanText();
+            task_mng.LoadPlanText(tBox_plan.Text);
+            tBox_plan.Text = task_mng.ReturnPlanText();
             ButtonWritePlan.BackColor = SystemColors.ActiveBorder;
             lab_sumPlan.Enabled = true;
-            lab_sumPlan.Text = cl.CalcTotalPlan().ToString("F") + "h";
+            lab_sumPlan.Text = task_mng.CalcTotalPlan().ToString("F") + "h";
             SetTaskButtons();
             UpdateProgBars();
-            if (cl.ACTIVE_TASK != null)
+            if (task_mng.ACTIVE_TASK != null)
             {
                 AchiveUpdateTimer.Enabled = true;
+            }
+            
+            if(tBox_plan.Text == this.plantext_checkdif)
+            {
+                ChangeChecker(false);
+            }
+            else
+            {
+                ChangeChecker(true);
             }
         }
 
         private void ButtonWriteAchive_Click(object sender, EventArgs e)
         {
-            tBox_achive.Text = cl.ReturnAchiveText();
-            lab_sumAchive.Text = cl.CalcTotalAchive().ToString("F") + "h";
+            tBox_achive.Text = task_mng.ReturnAchiveText();
+            lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
             UpdateProgBars();
         }
 
         private void Button_countstop_Click(object sender, EventArgs e)
         {
-            if (cl.ACTIVE_TASK != null)
+            if (task_mng.ACTIVE_TASK != null)
             {
-                DialogResult result = MessageBox.Show("計測を中断しますか？", "タスクの中断", MessageBoxButtons.OKCancel);
+                DialogResult result = MessageBox.Show(task_mng.ACTIVE_TASK.NAME + "を終了しますか？", "タスクの終了", MessageBoxButtons.OKCancel);
                 if (result == DialogResult.OK)
                 {
-                    LOG += cl.ACTIVE_TASK.CountStop() + "\r\n";
-                    tBox_ActiveTask.Text = "NEET TIME♨";
-                    cl.ACTIVE_TASK = null;
-                    tBox_log.Text = LOG;
-                }
-                
-            }
-            tBox_achive.Text = cl.ReturnAchiveText();
-            lab_sumAchive.Text = cl.CalcTotalAchive().ToString("F") + "h";
-            UpdateProgBars();
+                    WriteStopLog();
+                    tBox_ActiveTask.Text = this.NEET_TEXT;
+                    task_mng.ACTIVE_TASK = null;
+                    ChangeChecker(false);
 
+                    tBox_achive.Text = task_mng.ReturnAchiveText();
+                    lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+                    UpdateProgBars();
+                }
+
+            }
             AchiveUpdateTimer.Enabled = false;
         }
 
         private void AchiveUpdateTimer_Tick(object sender, EventArgs e)
         {
-            tBox_achive.Text = cl.ReturnAchiveText();
-            lab_sumAchive.Text = cl.CalcTotalAchive().ToString("F") + "h";
+            tBox_achive.Text = task_mng.ReturnAchiveText();
+            lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
             UpdateProgBars();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            string str = "アプリを終了してもいいですか？";
+            if (this.CHANGED)
+            {
+                str += "（保存されていないアクションは失われます）";
+            }
             if (MessageBox.Show(
-                "終了してもいいですか？", "確認",
+                str, "確認",
                 MessageBoxButtons.YesNo
                 ) == DialogResult.No)
             {
@@ -285,9 +317,9 @@ namespace nippou
 
         private void cBox_live_CheckedChanged(object sender, EventArgs e)
         {
-            if(cBox_live.Checked)
+            if (cBox_live.Checked)
             {
-                if(cl.ACTIVE_TASK != null)
+                if (task_mng.ACTIVE_TASK != null)
                 {
                     AchiveUpdateTimer.Enabled = true;
                 }
@@ -300,18 +332,159 @@ namespace nippou
 
         private void button_init_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("初期化しますか？", "初期化", MessageBoxButtons.OKCancel);
+            string str = "初期化しますか？";
+            if (this.CHANGED)
+            {
+                str += "（保存されていないアクションは失われます）";
+            }
+            DialogResult result = MessageBox.Show(str, "初期化", MessageBoxButtons.OKCancel);
             if (result == DialogResult.OK)
             {
-                cl.TASK_LIST.Clear();
-                cl.ACTIVE_TASK = null;
+                task_mng.TASK_LIST.Clear();
+                task_mng.ACTIVE_TASK = null;
                 SetTaskButtons();
                 tBox_log.Text = "";
                 tBox_achive.Text = "";
                 tBox_ActiveTask.Text = "";
                 lab_sumPlan.Text = "0.00h";
                 lab_sumAchive.Text = "0.00h";
+                tBox_fileName.Text = "";
+                ChangeChecker(false);
             }
+        }
+
+        private void ChangeChecker(bool changed)
+        {
+            this.CHANGED = changed;
+            if (changed)
+            {
+                if (tBox_fileName.Text == "")
+                {
+                    UpdateButton.Enabled = false;
+                }
+                else
+                {
+                    UpdateButton.Enabled = true;
+                }
+
+            }
+            else
+            {
+                UpdateButton.Enabled = false;
+            }
+        }
+
+
+        private void SaveForm(bool update)
+        {
+            this.task_mng.LOG_SAVE = tBox_log.Text;
+            FileControl file = new FileControl();
+            if (update)
+            {
+                file.filename = tBox_fileName.Text;
+                if (file.update(this.task_mng))
+                {
+                    ChangeChecker(false);
+                    this.plantext_checkdif = tBox_plan.Text;
+                    MessageBox.Show("上書き保存しました。");
+                }
+                else
+                {
+                    MessageBox.Show("ファイルが存在しないため、上書きできません。");
+                    UpdateButton.Enabled = false;
+                }
+            }
+            else
+            {
+                if (file.save(this.task_mng))
+                {
+                    tBox_fileName.Text = file.filename;
+                    ChangeChecker(false);
+                    this.plantext_checkdif = tBox_plan.Text;
+                }
+            }
+
+        }
+
+        private void LoadForm()
+        {
+            bool go = false;
+            if (this.CHANGED)
+            {
+                string str = "保存されたデータを読み込みますか？（保存されていないアクションは失われます）";
+                DialogResult result = MessageBox.Show(str, "読み込み", MessageBoxButtons.OKCancel);
+                if (result == DialogResult.OK)
+                {
+                    go = true;
+                }
+            }
+            else
+            {
+                go = true;
+            }
+
+            if (go)
+            {
+                FileControl file = new FileControl();
+                Object obj = file.load();
+                tBox_fileName.Text = file.filename;
+                //キャスト
+                if (obj == null) return;
+                this.task_mng = (TaskManager)obj;
+
+
+                // 予定テキストボックスの復元
+                tBox_plan.Text = task_mng.ReturnPlanText();
+                ButtonWritePlan.BackColor = SystemColors.ActiveBorder;
+                lab_sumPlan.Enabled = true;
+                lab_sumPlan.Text = task_mng.CalcTotalPlan().ToString("F") + "h";
+                if (task_mng.ACTIVE_TASK != null)
+                {
+                    AchiveUpdateTimer.Enabled = true;
+                }
+
+                // 実績テキストボックスの復元
+                tBox_achive.Text = task_mng.ReturnAchiveText();
+                lab_sumAchive.Text = task_mng.CalcTotalAchive().ToString("F") + "h";
+
+
+                // ボタンの復元
+                SetTaskButtons();
+                UpdateProgBars();
+
+                if (task_mng.ACTIVE_TASK == null)
+                {
+                    tBox_ActiveTask.Text = this.NEET_TEXT;
+                }
+                else
+                {
+                    tBox_ActiveTask.Text = task_mng.ACTIVE_TASK.NAME;
+                }
+
+                // ログテキストボックスの復元
+                tBox_log.Text = task_mng.LOG_SAVE;
+
+                this.plantext_checkdif = tBox_plan.Text;
+
+
+                ChangeChecker(false);
+            }
+
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            SaveForm(false);
+        }
+
+        private void LoadButton_Click(object sender, EventArgs e)
+        {
+            LoadForm();
+        }
+
+        private void UpdateButton_Click(object sender, EventArgs e)
+        {
+            SaveForm(true);
         }
     }
 
@@ -328,7 +501,7 @@ namespace nippou
             base.SetStyle(ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.OptimizedDoubleBuffer, true);
-            }
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -350,6 +523,80 @@ namespace nippou
 
             backBrush.Dispose();
             foreBrush.Dispose();
+        }
+    }
+
+    class FileControl
+    {
+        internal string filename;
+        internal string filepath;
+        internal string rootpath;
+        public FileControl()
+        {
+            this.filename = "";
+            this.rootpath = Directory.GetCurrentDirectory() + @"\Userdata";
+        }
+        internal bool save(Object saveData)
+        {
+            //保存先を指定するダイアログを開く
+            Directory.CreateDirectory(@"Userdata");
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.InitialDirectory = this.rootpath;
+            sfd.FileName = DateTime.Now.Year + "年" + DateTime.Now.Month.ToString("D2") + "月" + DateTime.Now.Day.ToString("D2") + "日実績" + "_" + DateTime.Now.Hour.ToString("D2") + DateTime.Now.Minute.ToString("D2") + DateTime.Now.Second.ToString("D2");
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                //指定したパスにファイルを保存する
+                Stream fileStream = sfd.OpenFile();
+                BinaryFormatter bF = new BinaryFormatter();
+                bF.Serialize(fileStream, saveData);
+                fileStream.Close();
+
+                this.filepath = sfd.FileName;
+                this.filename = Path.GetFileName(this.filepath);
+                return true;
+            }
+            return false;
+        }
+
+        internal bool update(Object saveData)
+        {
+            string path = this.rootpath + "\\" + this.filename;
+            if (File.Exists(path))
+            {
+                //指定したパスにファイルを保存する
+                Stream fileStream = File.OpenWrite(path);
+                BinaryFormatter bF = new BinaryFormatter();
+                bF.Serialize(fileStream, saveData);
+                fileStream.Close();
+
+                this.filepath = path;
+                this.filename = Path.GetFileName(path);
+                return true;
+            }
+            return false;
+        }
+
+        internal Object load()
+        {
+            //開くファイルを選択するダイアログを開く
+            Object loadedData = null;
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.InitialDirectory = Directory.GetCurrentDirectory() + @"\Userdata";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                //ファイルを読込
+                Stream fileStream = ofd.OpenFile();
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                loadedData = binaryFormatter.Deserialize(fileStream);
+                fileStream.Close();
+
+                this.filepath = ofd.FileName;
+                this.filename = Path.GetFileName(this.filepath);
+            }
+
+            return loadedData;
+
         }
     }
 }
