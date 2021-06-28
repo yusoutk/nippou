@@ -46,12 +46,15 @@ namespace nippou
             this.lab_sumAchieve = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.AchieveUpdateTimer = new System.Windows.Forms.Timer(this.components);
-            this.cBox_live = new System.Windows.Forms.CheckBox();
             this.button_init = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.LoadButton = new System.Windows.Forms.Button();
             this.tBox_fileName = new System.Windows.Forms.TextBox();
             this.UpdateButton = new System.Windows.Forms.Button();
+            this.cBox_live = new System.Windows.Forms.CheckBox();
+            this.PrefButton = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.panel_TaskButtons.SuspendLayout();
             this.panel_Plan.SuspendLayout();
             this.panel_Achieve.SuspendLayout();
@@ -69,12 +72,12 @@ namespace nippou
             // 
             // tBox_log
             // 
-            this.tBox_log.Location = new System.Drawing.Point(422, 51);
+            this.tBox_log.Location = new System.Drawing.Point(422, 74);
             this.tBox_log.Multiline = true;
             this.tBox_log.Name = "tBox_log";
             this.tBox_log.ReadOnly = true;
             this.tBox_log.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tBox_log.Size = new System.Drawing.Size(176, 282);
+            this.tBox_log.Size = new System.Drawing.Size(176, 259);
             this.tBox_log.TabIndex = 1;
             this.tBox_log.WordWrap = false;
             // 
@@ -142,9 +145,9 @@ namespace nippou
             // 
             this.panel_TaskButtons.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel_TaskButtons.Controls.Add(this.vScrollBar_tasks);
-            this.panel_TaskButtons.Location = new System.Drawing.Point(260, 51);
+            this.panel_TaskButtons.Location = new System.Drawing.Point(260, 72);
             this.panel_TaskButtons.Name = "panel_TaskButtons";
-            this.panel_TaskButtons.Size = new System.Drawing.Size(156, 282);
+            this.panel_TaskButtons.Size = new System.Drawing.Size(156, 261);
             this.panel_TaskButtons.TabIndex = 10;
             this.panel_TaskButtons.Scroll += new System.Windows.Forms.ScrollEventHandler(this.panel_TaskButtons_Scroll);
             // 
@@ -154,7 +157,7 @@ namespace nippou
             this.vScrollBar_tasks.Enabled = false;
             this.vScrollBar_tasks.Location = new System.Drawing.Point(137, 0);
             this.vScrollBar_tasks.Name = "vScrollBar_tasks";
-            this.vScrollBar_tasks.Size = new System.Drawing.Size(15, 278);
+            this.vScrollBar_tasks.Size = new System.Drawing.Size(15, 257);
             this.vScrollBar_tasks.TabIndex = 0;
             this.vScrollBar_tasks.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar_tasks_Scroll);
             // 
@@ -204,19 +207,6 @@ namespace nippou
             this.AchieveUpdateTimer.Interval = 1000;
             this.AchieveUpdateTimer.Tick += new System.EventHandler(this.AchieveUpdateTimer_Tick);
             // 
-            // cBox_live
-            // 
-            this.cBox_live.AutoSize = true;
-            this.cBox_live.Checked = true;
-            this.cBox_live.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cBox_live.Location = new System.Drawing.Point(517, 6);
-            this.cBox_live.Name = "cBox_live";
-            this.cBox_live.Size = new System.Drawing.Size(81, 16);
-            this.cBox_live.TabIndex = 14;
-            this.cBox_live.Text = "LiveUpdate";
-            this.cBox_live.UseVisualStyleBackColor = true;
-            this.cBox_live.CheckedChanged += new System.EventHandler(this.cBox_live_CheckedChanged);
-            // 
             // button_init
             // 
             this.button_init.Location = new System.Drawing.Point(436, 2);
@@ -265,12 +255,56 @@ namespace nippou
             this.UpdateButton.UseVisualStyleBackColor = true;
             this.UpdateButton.Click += new System.EventHandler(this.UpdateButton_Click);
             // 
+            // cBox_live
+            // 
+            this.cBox_live.AutoSize = true;
+            this.cBox_live.Checked = true;
+            this.cBox_live.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cBox_live.Location = new System.Drawing.Point(335, 55);
+            this.cBox_live.Name = "cBox_live";
+            this.cBox_live.Size = new System.Drawing.Size(81, 16);
+            this.cBox_live.TabIndex = 14;
+            this.cBox_live.Text = "LiveUpdate";
+            this.cBox_live.UseVisualStyleBackColor = true;
+            this.cBox_live.CheckedChanged += new System.EventHandler(this.cBox_live_CheckedChanged);
+            // 
+            // PrefButton
+            // 
+            this.PrefButton.Location = new System.Drawing.Point(523, 2);
+            this.PrefButton.Name = "PrefButton";
+            this.PrefButton.Size = new System.Drawing.Size(75, 23);
+            this.PrefButton.TabIndex = 20;
+            this.PrefButton.Text = "Preference";
+            this.PrefButton.UseVisualStyleBackColor = true;
+            this.PrefButton.Click += new System.EventHandler(this.PrefButton_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(265, 56);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(59, 12);
+            this.label2.TabIndex = 21;
+            this.label2.Text = "開始/中断";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(425, 56);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 12);
+            this.label3.TabIndex = 22;
+            this.label3.Text = "作業履歴";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(602, 336);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.PrefButton);
             this.Controls.Add(this.UpdateButton);
             this.Controls.Add(this.tBox_fileName);
             this.Controls.Add(this.SaveButton);
@@ -314,13 +348,16 @@ namespace nippou
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lab_sumAchieve;
         private System.Windows.Forms.Timer AchieveUpdateTimer;
-        private System.Windows.Forms.CheckBox cBox_live;
         private System.Windows.Forms.Button button_init;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.TextBox tBox_fileName;
         private System.Windows.Forms.Button UpdateButton;
         private System.Windows.Forms.VScrollBar vScrollBar_tasks;
+        private System.Windows.Forms.CheckBox cBox_live;
+        private System.Windows.Forms.Button PrefButton;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
     }
 }
 

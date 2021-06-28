@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text;
+using System.IO;
 
 namespace nippou
 {
@@ -29,10 +31,28 @@ namespace nippou
         public char TASK_PREFIX;
         public string LOG_SAVE;
 
+        public TaskFormat FORMAT;
+
+        private float COEF;
+
         public TaskManager()
         {
             this.ACTIVE_TASK = null;
-            this.TASK_PREFIX = '・';
+            this.FORMAT = new TaskFormat();
+            UnitIsMin(false);
+        }
+
+        public void UnitIsMin(bool min)
+        {
+            if(min)
+            {
+                this.COEF = 60f;
+            }
+            else
+            {
+                this.COEF = 1;
+            }
+
         }
 
 
@@ -40,16 +60,20 @@ namespace nippou
         {
             string LoadLine(string line, int f)
             {
-                line = line.Substring(1);
-                string[] spl = line.Split(' ');
+                string[] spl = line.Split(new[] { this.FORMAT.JOINT }, StringSplitOptions.None);
+
+                string str_h = spl[spl.Length - 1];
+
                 string str_name = "";
                 for (int i = 0; i < spl.Length - 1; i++)
                 {
-                    str_name += spl[i] + " ";
+                    str_name += spl[i];
+                    if (i < spl.Length - 2)
+                    {
+                        str_name += this.FORMAT.JOINT;
+                    }
                 }
-                str_name = str_name.Trim();
-                string str_h = spl[spl.Length - 1];
-                str_h = str_h.Substring(0, str_h.Length - 1);
+
                 if (f == 0)
                 {
                     return str_name;
@@ -64,74 +88,79 @@ namespace nippou
             List<Task> new_task_list = new List<Task>();
 
             string[] lines = text.Replace("\r\n", "\n").Split('\n');
-            for (int j = 0; j < lines.Length; j++)
+            for (int i = 0; i < lines.Length; i++)
             {
-                string line = lines[j];
+                string line = lines[i];
                 bool add = false;
                 if (line.Length > 0)
                 {
-                    if (line[0] != this.TASK_PREFIX)
+                    if (line.StartsWith(this.FORMAT.HEAD))
                     {
-                        line = this.TASK_PREFIX + line;
+                        line = line.Remove(0, this.FORMAT.HEAD.Length);
                     }
-                    if (line[0] == this.TASK_PREFIX && line[line.Length - 1] == 'h')
+
+                    if (line.EndsWith(this.FORMAT.TAIL))
                     {
-                        string str_name = LoadLine(line, 0);
-                        string str_h = LoadLine(line, 1);
+                        line = line.Remove(line.Length - this.FORMAT.TAIL.Length);
+                    }
 
 
-                        if (str_name != "" && str_h != "")
+                    string str_name = LoadLine(line, 0);
+                    string str_h = LoadLine(line, 1);
+
+
+                    if (str_name != "" && str_h != "")
+                    {
+                        add = true;
+                    }
+
+
+                    if (!float.TryParse(str_h, out float f_h))
+                    {
+                        add = false;
+                    }
+
+
+                    if (add)
+                    {
+                        int index = 0;
+                        for (int j = 0; j < this.TASK_LIST.Count; j++)
                         {
-                            add = true;
+                            Task tsk = this.TASK_LIST[j];
+                            if (tsk.NAME == str_name)
+                            {
+                                add = false;
+                                index = j;
+                            }
                         }
-
-
-                        if (!float.TryParse(str_h, out float f_h))
-                        {
-                            add = false;
-                        }
-
-
                         if (add)
                         {
-                            int index = 0;
-                            for (int i = 0; i < this.TASK_LIST.Count; i++)
+                            Task new_task = new Task(str_name, float.Parse(str_h));
+                            new_task_list.Add(new_task);
+                        }
+                        else
+                        {
+                            add = true;
+                            for (int j = 0; j < new_task_list.Count; j++)
                             {
-                                Task tsk = this.TASK_LIST[i];
+                                Task tsk = new_task_list[j];
                                 if (tsk.NAME == str_name)
                                 {
                                     add = false;
-                                    index = i;
                                 }
                             }
                             if (add)
                             {
-                                Task new_task = new Task(str_name, float.Parse(str_h));
-                                new_task_list.Add(new_task);
-                            }
-                            else
-                            {
-                                add = true;
-                                for (int i = 0; i < new_task_list.Count; i++)
+                                if (f_h < this.FORMAT.UNIT)
                                 {
-                                    Task tsk = new_task_list[i];
-                                    if (tsk.NAME == str_name)
-                                    {
-                                        add = false;
-                                    }
+                                    f_h = this.FORMAT.UNIT;
                                 }
-                                if (add)
-                                {
-                                    if (f_h < 0.25)
-                                    {
-                                        f_h = 0.25f;
-                                    }
-                                    this.TASK_LIST[index].PLAN_H = (float)Math.Round(f_h * 4) / 4;
-                                    new_task_list.Add(this.TASK_LIST[index]);
-                                }
+                                this.TASK_LIST[index].PLAN_H = (float)Math.Round(f_h * this.COEF / this.FORMAT.UNIT) * this.FORMAT.UNIT;
+                                new_task_list.Add(this.TASK_LIST[index]);
                             }
                         }
                     }
+
                 }
             }
             if (this.ACTIVE_TASK != null)
@@ -155,12 +184,19 @@ namespace nippou
         }
 
 
+        private string GetLine(Task tsk, float h)
+        {
+            float out_h = (float)Math.Round(h / this.FORMAT.UNIT) * this.FORMAT.UNIT;
+            string str = this.FORMAT.HEAD + tsk.NAME + this.FORMAT.JOINT + out_h.ToString(this.FORMAT.NUMBER) + this.FORMAT.TAIL;
+            return str;
+        }
+
         public string ReturnPlanText()
         {
             string text = "";
             foreach (Task tsk in this.TASK_LIST)
             {
-                text += tsk.GetLine(tsk.PLAN_H) + "h\r\n";
+                text += GetLine(tsk, tsk.PLAN_H) + "\r\n";
             }
             return text;
         }
@@ -176,7 +212,7 @@ namespace nippou
                 {
                     aa = tsk.ActiveAchieve();
                 }
-                text += tsk.GetLine(tsk.ACHIEVE_H + aa) + "h\r\n";
+                text += GetLine(tsk, tsk.ACHIEVE_H + aa) + "\r\n";
             }
             return text;
         }
@@ -209,7 +245,7 @@ namespace nippou
 
     }
     [Serializable]
-    public class Task
+    public class Task : TaskManager
     {
         public string NAME;
         public float PLAN_H;
@@ -254,14 +290,34 @@ namespace nippou
             float aa = (float)ts.TotalSeconds / 3600;
             return aa;
         }
+    }
 
-        public string GetLine(float h)
+    [Serializable]
+    public class TaskFormat
+    {
+        public string NAME;
+        public string HEAD;
+        public string JOINT;
+        public string TAIL;
+        public string NUMBER;
+        public float UNIT;
+        public bool UNIT_IS_MIN;
+
+        public TaskFormat()
         {
-            float out_h = (float)Math.Round(h * 4) / 4;
-            string str = "・" + this.NAME + " " + out_h.ToString("F2");
-            return str;
+            this.HEAD = "・";
+            this.JOINT = " ";
+            this.TAIL = "h";
+            this.NUMBER = "F2";
+            this.UNIT = 0.25f;
+            this.UNIT_IS_MIN = false;
+            this.NAME = SetName();
         }
 
-
+        public string SetName()
+        {
+            this.NAME = this.HEAD + "[TASK]" + this.JOINT + 0.ToString(this.NUMBER) + this.TAIL;
+            return this.NAME;
+        }
     }
 }

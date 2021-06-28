@@ -16,6 +16,7 @@ namespace nippou
         private bool CHANGED;
         private string plantext_checkdif;
         private int btn_height;
+        public int[] DLG;
         public MainForm()
         {
             InitializeComponent();
@@ -26,6 +27,7 @@ namespace nippou
             this.NEET_TEXT = "NEET TIME ♨";
             this.plantext_checkdif = "";
             this.btn_height = 0;
+            this.DLG = new int[] { 2, 2, 1, 1, 1 };
             ChangeChecker(false);
 
             this.ActiveControl = tBox_plan;
@@ -118,7 +120,7 @@ namespace nippou
                 this.PROG_LIST.Add(pbar);
             }
 
-            if(this.BUTTON_LIST.Count * 60 > panel_TaskButtons.Height)
+            if (this.BUTTON_LIST.Count * 60 > panel_TaskButtons.Height)
             {
                 vScrollBar_tasks.Enabled = true;
                 vScrollBar_tasks.Maximum = this.BUTTON_LIST.Count * 60 + 3;
@@ -179,7 +181,7 @@ namespace nippou
                     }
 
                 }
-                if(val > 1)
+                if (val > 1)
                 {
                     val = val - (float)Math.Floor(val);
                 }
@@ -217,7 +219,7 @@ namespace nippou
                     {
                         msg = task_mng.ACTIVE_TASK.NAME + "を終了し、" + msg;
                     }
-                    DialogResult result = MessageBox.Show(msg, "タスクの開始", MessageBoxButtons.OKCancel);
+                    DialogResult result = ShowDialog(msg, "タスクの開始", this.DLG[0]);
                     if (result == DialogResult.OK)
                     {
                         if (task_mng.ACTIVE_TASK != null)
@@ -241,6 +243,55 @@ namespace nippou
 
                 }
             }
+        }
+
+        private DialogResult ShowDialog(string msg, string title, int type)
+        {
+
+            if (this.CHANGED)
+            {
+                if (type > 0)
+                {
+                    msg += "\n（はい：その前に保存する, いいえ：保存しない）";
+                    DialogResult result = MessageBox.Show(msg, title, MessageBoxButtons.YesNoCancel);
+                    if (result == DialogResult.Yes)
+                    {
+                        if (SaveForm(UpdateButton.Enabled))
+                        {
+                            return DialogResult.OK;
+                        }
+                        else
+                        {
+                            return DialogResult.Cancel;
+                        }
+
+                    }
+                    else if (result == DialogResult.No)
+                    {
+                        return DialogResult.OK;
+                    }
+                    else
+                    {
+                        return DialogResult.Cancel;
+                    }
+                }
+                else
+                {
+                    return DialogResult.OK;
+                }
+            }
+            else
+            {
+                if (type > 1)
+                {
+                    return MessageBox.Show(msg, title, MessageBoxButtons.OKCancel);
+                }
+                else
+                {
+                    return DialogResult.OK;
+                }
+            }
+
         }
 
         private void WriteStopLog()
@@ -275,8 +326,8 @@ namespace nippou
             {
                 AchieveUpdateTimer.Enabled = true;
             }
-            
-            if(tBox_plan.Text == this.plantext_checkdif)
+
+            if (tBox_plan.Text == this.plantext_checkdif)
             {
                 ChangeChecker(false);
             }
@@ -297,7 +348,7 @@ namespace nippou
         {
             if (task_mng.ACTIVE_TASK != null)
             {
-                DialogResult result = MessageBox.Show(task_mng.ACTIVE_TASK.NAME + "を終了しますか？", "タスクの終了", MessageBoxButtons.OKCancel);
+                DialogResult result = ShowDialog(task_mng.ACTIVE_TASK.NAME + "を終了しますか？", "タスクの終了", this.DLG[1]);
                 if (result == DialogResult.OK)
                 {
                     WriteStopLog();
@@ -327,15 +378,14 @@ namespace nippou
             if (this.CHANGED)
             {
                 str += "（保存されていないアクションは失われます）";
-                if (MessageBox.Show(
-                str, "確認",
-                MessageBoxButtons.YesNo
-                ) == DialogResult.No)
-                {
-                    e.Cancel = true;
-                }
             }
-            
+
+
+            if (ShowDialog(str, "確認", this.DLG[4]) != DialogResult.OK)
+            {
+                e.Cancel = true;
+            }
+
         }
 
         private void cBox_live_CheckedChanged(object sender, EventArgs e)
@@ -360,7 +410,7 @@ namespace nippou
             {
                 str += "（保存されていないアクションは失われます）";
             }
-            DialogResult result = MessageBox.Show(str, "初期化", MessageBoxButtons.OKCancel);
+            DialogResult result = ShowDialog(str, "初期化", this.DLG[3]);
             if (result == DialogResult.OK)
             {
                 task_mng.TASK_LIST.Clear();
@@ -398,7 +448,7 @@ namespace nippou
         }
 
 
-        private void SaveForm(bool update)
+        private bool SaveForm(bool update)
         {
             this.task_mng.LOG_SAVE = tBox_log.Text;
             FileControl file = new FileControl();
@@ -409,11 +459,13 @@ namespace nippou
                 {
                     ChangeChecker(false);
                     this.plantext_checkdif = tBox_plan.Text;
+                    return true;
                 }
                 else
                 {
                     MessageBox.Show("ファイルが存在しないため、上書きできません。");
                     UpdateButton.Enabled = false;
+                    return false;
                 }
             }
             else
@@ -423,6 +475,11 @@ namespace nippou
                     tBox_fileName.Text = file.filename;
                     ChangeChecker(false);
                     this.plantext_checkdif = tBox_plan.Text;
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
 
@@ -434,7 +491,7 @@ namespace nippou
             if (this.CHANGED)
             {
                 string str = "保存されたデータを読み込みますか？（保存されていないアクションは失われます）";
-                DialogResult result = MessageBox.Show(str, "読み込み", MessageBoxButtons.OKCancel);
+                DialogResult result = ShowDialog(str, "読み込み", this.DLG[2]);
                 if (result == DialogResult.OK)
                 {
                     go = true;
@@ -519,6 +576,14 @@ namespace nippou
         {
 
         }
+
+        private void PrefButton_Click(object sender, EventArgs e)
+        {
+            PrefForm prefForm = new PrefForm(task_mng, this);
+            prefForm.Show();
+        }
+
+
     }
 
     /// <summary>
@@ -632,4 +697,5 @@ namespace nippou
 
         }
     }
+
 }
