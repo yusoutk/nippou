@@ -303,7 +303,7 @@ namespace nippou
                     WriteStopLog();
                     tBox_ActiveTask.Text = this.NEET_TEXT;
                     task_mng.ACTIVE_TASK = null;
-                    ChangeChecker(false);
+                    ChangeChecker(true);
 
                     tBox_achieve.Text = task_mng.ReturnAchieveText();
                     lab_sumAchieve.Text = task_mng.CalcTotalAchieve().ToString("F") + "h";
